@@ -19,4 +19,5 @@ $(GEN_FILE): $(GEN_FILE).cpp
 
 clean:
 	rm -rf $(GEN_FILE)
+	rm -rf $(GREEDY_FILE)
 	rm -rf *.o
