@@ -6,7 +6,28 @@
 #include <set>
 #include <algorithm>
 
+#include <ctime>
+
 using namespace std;
+
+void loading (int iter, int count, int full_size)
+{
+    double persent = (100.0 * count / full_size) * (iter + 1);  // full_size - 100%     count - x%
+    int R = 20.0 * persent / 100.0;
+
+    cout << "[";
+
+    for (int r = 0; r < R; r++)
+        cout << "#";
+
+    for (int r = R; r < 20; r++)
+        cout << ".";
+
+    cout << "] ";
+    cout << (int)persent << " %\r";
+
+    return;
+}
 
 bool mySort (pair < int, int > i, pair < int, int > j)
 {
@@ -87,16 +108,29 @@ std::vector < std::vector < int > > find_neighbour (std::vector < int > vec, int
 int main(int argc, char const *argv[])
 {
     /*<matrix_file> <num_of_proc>*/
-    if (argc != 3)
+    if (argc != 4)
     {
-        cerr << ">Unexpected quantity of arguments, check your comand string:\n ./<prog> <matrix_file> <num_of_proc>" << endl;
+        cerr << ">Unexpected quantity of arguments, check your comand string:\n./<prog> <matrix_file> <num_of_proc> [mapping_file]" << endl;
         return -1;
+    }
+
+    if (argc == 3)
+    {
+        /*если не равно 3, то тогда сделать дефолтное имя мээпинг файла*/
     }
 
     ifstream matrix_file(argv[1]);
     if (matrix_file.is_open() == false)
     {
         cerr << ">Can not open matrix with such name." << endl;
+        return -1;
+    }
+
+    ofstream map_file(argv[3]);
+    if (map_file.is_open() == false)
+    {
+        cerr << ">Can not open map_file with such name." << endl;
+        matrix_file.close();
         return -1;
     }
 
@@ -112,14 +146,24 @@ int main(int argc, char const *argv[])
     }
 
     /*ИНИЦИАЛИЗАЦИЯ И СЧИТЫВАНИЕ КОММУНИКАЦИОННОЙ МАТРИЦЫ*/
+    cout << "> Read communication matrix..." << endl;
+
+    //double time = clock();
     std::vector < std::vector < int > > matrix(num);
 
     for (int i = 0; i < num; i++)
         matrix[i].resize(num);
 
     for (int i = 0; i < num; i++)
+    {
+        loading(i, num, num * num);
+
         for (int j = 0; j < num; j++)
             matrix_file >> matrix[i][j];
+    }
+
+    cout << "\n> DONE!" << endl;
+    //cout << ">Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
     /*****************************************************/
 
     /*СОЗДАНИЕ МЭППИНГ ВЕКТОРА, НАХОЖДЕНИЕ ПРЕДПОЧТИТЕЛЬНЫХ
@@ -135,8 +179,13 @@ int main(int argc, char const *argv[])
 
     std::vector < pair < int, int > > tmp_str(num);
 
+    cout << "> Build mapping-vector..." << endl;
+    //time = clock();
     for (int i = 0; i < num; i++)
     {
+
+        loading(i, num + 1, num * num + num);
+
         for (int j = 0; j < num; j++)
         {
             tmp_str[j].first = j;
@@ -180,6 +229,8 @@ int main(int argc, char const *argv[])
             conut_num++;
         }
     }
+    cout << "\n> DONE!" << endl;
+    //cout << ">Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
     /*****************************************************/
 
     /*вывод для дебага*/
@@ -193,10 +244,14 @@ int main(int argc, char const *argv[])
     }*/
 
     /*МНОЖЕСТВА ДЛЯ КЛАССИФИКАЦИИ*/
+    cout << "> Creating sets..." << endl;
+    //time = clock();
     std::set < int > done, process, last;
 
     for (int i = 0; i < num; i++)
     {
+        loading(0, i + 1, num);
+
         if (mapping_vec[i][0] == -1)
         {
             last.insert(i);
@@ -205,9 +260,13 @@ int main(int argc, char const *argv[])
 
         process.insert(i);
     }
+    cout << "\n> DONE!" << endl;
+    //cout << ">Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
     /*****************************/
 
     /*ТОР И ИНИЦИАЛИЗАЦИЯ, ОПРЕДЕЛЕНИЕ ПЕРВОГО ПРОЦЕССА*/
+    cout << "> Creating torus..." << endl;
+    //time = clock();
     std::vector < std::vector < std::vector < int > > > torus(dim);
 
     for (int i = 0; i < dim; i++)
@@ -218,9 +277,13 @@ int main(int argc, char const *argv[])
     }
 
     for (int i = 0; i < dim; i++)
+    {
+        loading(i, dim * dim, num);
+
         for (int j = 0; j < dim; j++)
             for (int k = 0; k < dim; k++)
                 torus[i][j][k] = -1;
+    }
 
     int proc = 0;
 
@@ -231,12 +294,19 @@ int main(int argc, char const *argv[])
         neihgbours[i].resize(3);
 
     proc = find_first(mapping_vec, process); /*ПОТОМ ЗАКОММЕНТИТЬ И СРАВНИТЬ С ТЕМ АЛГОРИТМОМ, КОГДА ПЕРВЫЙ ВСЕГДА 0*/
+    cout << "\n> DONE!" << endl;
+    //cout << ">Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
     /***************************************************/
 
     /*РАСПРЕДЕЛЕНИЕ ПРОЦЕССОВ В ТОРЕ ПО МЭППИНГ ВЕКТОРУ*/
+    cout << "> Setting procs on torus..." << endl;
+    //time = clock();
     torus[0][0][0] = proc;
+    int full_size = process.size();
     while (process.empty() != true)
     {
+        loading(0, full_size - process.size() + 1, full_size);
+
         neihgbours = find_neighbour(proc_cords, dim);
 
         for (int i = 0; i < 6; i++)
@@ -341,13 +411,20 @@ int main(int argc, char const *argv[])
                         last.erase(torus[i][j][k]);
                     }
     }
+    cout << "\n> DONE!" << endl;
+    //cout << ">Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
     /***************************************************/
 
     /*СОРТИРОВКА ВЕКТОРА ДЛЯ ВЫВОДА МЭППИГ-ФАЙЛА*/
+    cout << "> Creating mapping-file..." << endl;
+    //time = clock();
     std::vector<pair <int, int[3]> > vec(num);
     int cnt = 0;
 
     for (int i = 0; i < dim; i++)
+    {
+        loading(i, dim * dim, num);
+
         for (int j = 0; j < dim; j++)
             for (int k = 0; k < dim; k++)
             {
@@ -356,15 +433,22 @@ int main(int argc, char const *argv[])
                 vec[cnt].second[1] = j;
                 vec[cnt++].second[2] = k;
             }
+    }
 
     sort(vec.begin(), vec.end(), mySort1);    
+    cout << "\n> DONE!" << endl;
+    //cout << ">Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
     /********************************************/
 
-    cout << endl;
+    cout << "> Writting mapping-file..." << endl;
+    //cout << endl;
     for (int i = 0; i < num; i++)
     {
-        cout << vec[i].first << "   " << vec[i].second[0] << " " << vec[i].second[1] << " " << vec[i].second[2] << endl;
+        loading(0, i + 1, num);
+
+        map_file << vec[i].first << "   " << vec[i].second[0] << " " << vec[i].second[1] << " " << vec[i].second[2] << endl;
     }
+    cout << "\n> DONE!" << endl;
 
     /*вывод для дебага*/
     /*cout << endl;
@@ -375,5 +459,7 @@ int main(int argc, char const *argv[])
                 cout << torus[i][j][k] << "   " << i << " " << j << " " << k << endl;
             }*/
 
+    matrix_file.close();
+    map_file.close();
     return 0;
 }
