@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
     ofstream matrix_file(argv[1]);
     if (matrix_file.is_open() == false)
     {
-        cerr << ">Can not open vecB with such name." << endl;
+        cerr << ">Can not open matrix with such name." << endl;
         return -1;
     }
 

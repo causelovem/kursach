@@ -18,11 +18,6 @@ bool mySort1 (pair < int, int[3] > i, pair < int, int[3] > j)
     return i.first < j.first;
 }
 
-bool mySort2 (pair < int, int > i, pair < int, int > j)
-{
-    return i.second > j.second;
-}
-
 int check_how_much (std::vector < int > vec)
 {
     int size = vec.size();
@@ -54,7 +49,7 @@ int find_first (std::vector < std::vector < int > > vec, std::set < int > proc_s
         tmp[i++].second = check_how_much(vec[*it]);
     }
 
-    sort(tmp.begin(), tmp.end(), mySort2);
+    sort(tmp.begin(), tmp.end(), mySort);
     /*for (int j = 0; j < i; j++)
     {
         cout << tmp[j].first << " " << tmp[j].second << endl;
@@ -79,14 +74,11 @@ std::vector < std::vector < int > > find_neighbour (std::vector < int > vec, int
 
         if (tmp[i][i] == dim)
             tmp[i][i] = 0;
-    }
 
-    for (int i = 3; i < 6; i++)
-    {
-        tmp[i][i - 3]--;
+        tmp[i + 3][i]--;
 
-        if (tmp[i][i - 3] == -1)
-            tmp[i][i - 3] = dim - 1;
+        if (tmp[i + 3][i] == -1)
+            tmp[i + 3][i] = dim - 1;
     }
 
     return tmp;
@@ -97,14 +89,14 @@ int main(int argc, char const *argv[])
     /*<matrix_file> <num_of_proc>*/
     if (argc != 3)
     {
-        cerr << ">Unexpected quantity of arguments, check your comand string." << endl;
+        cerr << ">Unexpected quantity of arguments, check your comand string:\n ./<prog> <matrix_file> <num_of_proc>" << endl;
         return -1;
     }
 
     ifstream matrix_file(argv[1]);
     if (matrix_file.is_open() == false)
     {
-        cerr << ">Can not open vecA with such name." << endl;
+        cerr << ">Can not open matrix with such name." << endl;
         return -1;
     }
 
@@ -150,7 +142,7 @@ int main(int argc, char const *argv[])
             tmp_str[j].first = j;
             tmp_str[j].second = matrix[i][j];
         }
-
+        /*добавить if и сделать сорировку не полного массива для ускорения*/
         sort(tmp_str.begin(), tmp_str.end(), mySort);
 
         /*вывод для дебага*/
@@ -277,6 +269,7 @@ int main(int argc, char const *argv[])
                     proc_cords[k] = neihgbours[j][k];
                 proc = torus[neihgbours[j][0]][neihgbours[j][1]][neihgbours[j][2]];
 
+                /*вывод для дебага*/
                 /*cout << "!!!" << proc << " " << last_proc << endl;
                 for (int k = 0; k < 3; k++)
                     cout << proc_cords[k] << " ";
@@ -316,6 +309,7 @@ int main(int argc, char const *argv[])
 
             torus[proc_cords[0]][proc_cords[1]][proc_cords[2]] = proc;
 
+            /*вывод для дебага*/
             /*cout << "???" << proc << " " << last_proc << endl;
             for (int k = 0; k < 3; k++)
                 cout << proc_cords[k] << " ";
@@ -323,6 +317,7 @@ int main(int argc, char const *argv[])
         }
     }
 
+    /*вывод для дебага*/
     /*for (std::set<int>::iterator it = last.begin(); it != last.end(); it++)
     {
         cout << *it << endl;
@@ -371,10 +366,10 @@ int main(int argc, char const *argv[])
         cout << vec[i].first << "   " << vec[i].second[0] << " " << vec[i].second[1] << " " << vec[i].second[2] << endl;
     }
 
-
+    /*вывод для дебага*/
     /*cout << endl;
     for (int i = 0; i < dim; i++)
-        for (int j = 0; j < dim; j++)
+        for (int j = 0; j` < dim; j++)
             for (int k = 0; k < dim; k++)
             {
                 cout << torus[i][j][k] << "   " << i << " " << j << " " << k << endl;
