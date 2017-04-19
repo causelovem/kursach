@@ -6,10 +6,10 @@ CXXFLAGS = -g -O3
 all: $(GEN_FILE) $(GREEDY_FILE)
 
 map:
-	./$(GREEDY_FILE) matrix 27
+	./$(GREEDY_FILE) matrix512 512
 
 gen:
-	./$(GEN_FILE) matrix 27
+	./$(GEN_FILE) matrix512 512
 
 $(GREEDY_FILE): $(GREEDY_FILE).cpp
 	$(CXX) $(CXXFLAGS) $(GREEDY_FILE).cpp -o $(GREEDY_FILE)
