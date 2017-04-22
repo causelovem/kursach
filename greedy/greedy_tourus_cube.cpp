@@ -10,6 +10,19 @@
 
 using namespace std;
 
+struct grid
+{
+    int g8[3] = {2, 2, 2};
+    int g16[3] = {4, 2, 2};
+    int g32[3] = {4, 4, 2};
+    int g64[3] = {4, 4, 4};
+    int g128[3] = {4, 4, 8};
+    int g256[3] = {8, 4, 8};
+    int g512[3] = {8, 8, 8};
+    int g1024[3] = {8, 8, 16};
+    int g2048[3] = {8, 16, 16};
+};
+
 void loading (int count, int full_size)
 {
     double persent = (100.0 * count / full_size);  // full_size - 100%     count - x%
@@ -144,6 +157,7 @@ int main(int argc, char const *argv[])
     if (tmp - dim > 0.0000001)
     {
         cerr << "> Can not map your program, because your number of proc is not a 3-rd power of some N." << endl;
+        map_file.close();
         matrix_file.close();
         return -1;
     }
@@ -151,7 +165,7 @@ int main(int argc, char const *argv[])
     /*ИНИЦИАЛИЗАЦИЯ И СЧИТЫВАНИЕ КОММУНИКАЦИОННОЙ МАТРИЦЫ*/
     cout << "> Reading communication matrix..." << endl;
 
-    //double time = clock();
+    double time = clock();
     std::vector < std::vector < int > > matrix(num);
 
     for (int i = 0; i < num; i++)
@@ -197,6 +211,8 @@ int main(int argc, char const *argv[])
                 if (matrix[i][j] < 0)
                 {
                     cerr << "> Something wrong with the communication matrix." << endl;
+                    map_file.close();
+                    matrix_file.close();
                     return -1;
                 }
             }
@@ -452,7 +468,7 @@ int main(int argc, char const *argv[])
     //time = clock();
     std::vector<pair <int, int[3]> > vec(num);
     int cnt = 0;
-
+    /*засунуть это в цикл "распределение по тору" и убрать этот блок вообще*/
     for (int i = 0; i < dim; i++)
     {
         loading(i + 1, dim);
@@ -478,9 +494,13 @@ int main(int argc, char const *argv[])
     {
         loading(i + 1, num);
 
-        map_file << vec[i].first << "   " << vec[i].second[0] << " " << vec[i].second[1] << " " << vec[i].second[2] << endl;
+        //map_file << vec[i].first << "   " << vec[i].second[0] << " " << vec[i].second[1] << " " << vec[i].second[2] << endl;
+        map_file << vec[i].second[0] << " " << vec[i].second[1] << " " << vec[i].second[2] << " 0" << endl;
     }
     cout << "\n> DONE!\n" << endl;
+
+    cout << "> Your map file was successfully written in the file, with file name " << argv[3] << endl;
+    cout << "> Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
 
     /*вывод для дебага*/
     /*cout << endl;
