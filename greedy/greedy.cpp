@@ -74,11 +74,6 @@ int find_first (std::vector < std::vector < int > > vec, std::set < int > proc_s
     }
 
     sort(tmp.begin(), tmp.end(), mySort);
-    /*for (int j = 0; j < i; j++)
-    {
-        cout << tmp[j].first << " " << tmp[j].second << endl;
-    }
-    cout << tmp[0].first << " " << tmp[0].second << endl;*/
 
     return tmp[0].first;
 }
@@ -210,86 +205,6 @@ int main(int argc, char const *argv[])
     }
 
     int dim[3] = {dimX, dimY, dimZ};
-
-    /*switch (num)
-    {
-        case 8:
-        {
-            dimX = 2;
-            dimY = 2;
-            dimZ = 2;
-            break;
-        }
-
-        case 16:
-        {
-            dimX = 2;
-            dimY = 2;
-            dimZ = 4;
-            break;
-        }
-
-        case 32:
-        {
-            dimX = 2;
-            dimY = 4;
-            dimZ = 4;
-            break;
-        }
-
-        case 64:
-        {
-            dimX = 4;
-            dimY = 4;
-            dimZ = 4;
-            break;
-        }
-
-        case 128:
-        {
-            dimX = 4;
-            dimY = 4;
-            dimZ = 8;
-            break;
-        }
-
-        case 256:
-        {
-            dimX = 8;
-            dimY = 4;
-            dimZ = 8;
-            break;
-        }
-
-        case 512:
-        {
-            dimX = 8;
-            dimY = 8;
-            dimZ = 8;
-            break;
-        }
-
-        case 1024:
-        {
-            dimX = 8;
-            dimY = 8;
-            dimZ = 16;
-            break;
-        }
-
-        case 2048:
-        {
-            dimX = 8;
-            dimY = 16;
-            dimZ = 16;
-            break;
-        }
-
-        default:
-        {
-            cerr << "> Can not map your program, because your number of proc is not a 3-rd power of some N." << endl;
-        }
-    }*/
 
     /*ИНИЦИАЛИЗАЦИЯ И СЧИТЫВАНИЕ КОММУНИКАЦИОННОЙ МАТРИЦЫ*/
     cout << "> Reading communication matrix..." << endl;
@@ -578,22 +493,37 @@ int main(int argc, char const *argv[])
             }*/
 
 
+    cout << "> Setting last procs on torus..." << endl;
     if (last.size() != 0)
     {
-        cout << "> Setting last procs on torus..." << endl;
+        int flag = 0;
         for (int i = 0; i < dimX; i++)
         {
+            if (flag)
+                break;
             loading(i + 1, dimX);
+
             for (int j = 0; j < dimY; j++)
+            {
+                if (flag)
+                    break;
+
                 for (int k = 0; k < dimZ; k++)
                     if (torus[i][j][k] == -1)
                     {
+                        if (last.size() == 0)
+                        {
+                            flag = 1;
+                            break;
+                        }
+
                         torus[i][j][k] = *last.begin();
                         last.erase(torus[i][j][k]);
                     }
+            }
         }
-        cout << "\n> DONE!\n" << endl;
     }
+    cout << "\n> DONE!\n" << endl;
     //cout << ">Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
     /***************************************************/
 
@@ -644,7 +574,7 @@ int main(int argc, char const *argv[])
 
     cout << endl;
     int proc_empty = num;
-    for (int i = 0; i < vec_empty.size(); i++)
+    for (uint i = 0; i < vec_empty.size(); i++)
     {
         cout << proc_empty++ << "   " << vec_empty[i][0] << " " << vec_empty[i][1] << " " << vec_empty[i][2] << " " << endl;
     }

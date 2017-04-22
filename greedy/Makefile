@@ -1,7 +1,7 @@
 GREEDY_FILE = greedy
 GEN_FILE = com_matrix_gen
 CXX = g++
-CXXFLAGS = -g -O3
+CXXFLAGS = -g -O3 -Wall
 
 all: $(GEN_FILE) $(GREEDY_FILE)
 
