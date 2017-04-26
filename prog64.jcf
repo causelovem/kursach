@@ -1,0 +1,9 @@
+# @ job_type = bluegene
+# @ class = n32_m15
+# @ output = $(jobid).out
+# @ error = $(jobid).err
+# @ wall_clock_limit = 00:15:00
+# @ bg_size = 32
+# @ queue
+
+/bgsys/drivers/ppcfloor/bin/mpirun -np 32 -mapfile mmm /gpfs/data/edu-cmc-sqi16y3-004/kursach/prog_test_for_bg
