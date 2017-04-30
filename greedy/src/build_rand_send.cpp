@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     {
         vec[i].resize(2);
     }
+    
 start:
     for (int i = 0; i < num_of_proc; i++)
     {        
@@ -55,8 +56,6 @@ start:
             if (cnt < 1)
             {
                 cerr << "GG" << endl;
-                //send_mas.close();
-                //return -1;
                 goto start;
 
             }
@@ -72,30 +71,18 @@ start:
             if (i == tmp)
                 flag = 1;
 
-            cout << i << " " << tmp << " " << cnt << endl;
-
             if (flag == 1)
                 tmp = (int)rand() % num_of_proc;
         }
 
         vec[i][0] = tmp;
         //vec[tmp][1] = i;
-
-        /*cout << endl;
-        for (int j = 0; j < i + 1; j++)
-            cout << vec[j][0] << " " << vec[j][1] << " " << j << endl; 
-        cout << i << endl;*/
     }
 
     for (int i = 0; i < num_of_proc; i++)
         for (int j = 0; j < num_of_proc; j++)
             if (vec[j][0] == i)
                 vec[i][1] = j;
-
-    cout << endl;
-        for (int j = 0; j < num_of_proc; j++)
-            cout << vec[j][0] << " " << vec[j][1] << " " << j << endl; 
-        cout << endl;
 
     for (int i = 0; i < num_of_proc; i++)
         send_mas << vec[i][0] << " " << vec[i][1] << endl;
@@ -105,7 +92,6 @@ start:
         if ((vec[i][0] == -1) || (vec[i][1] == -1)
             || (vec[i][0] == i) || ((vec[i][1] == i)))
         {
-            //cerr << endl << vec[i][0] << " " << vec[i][1] << " " << i <<  endl << endl;
             cerr << "> Something wrong in \"buld_rand_send\"" << endl;
             send_mas.close();
             return -1;

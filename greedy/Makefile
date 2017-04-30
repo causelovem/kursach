@@ -15,12 +15,18 @@ gen:
 	./bin/com_matrix_gen matrix512 512
 
 check:
+
+	# for (( count = 0; count < 32; count++ )) do \
+	# 	echo >> proc_$count ; \
+	# done \
+	
 	rm -rf trace_folder/proc_*
-	./bin/build_rand_send mas 512
-	mpirun -np 512 ./bin/prog_test '/home/causelove/mishenka/prog/kursach/greedy/trace_folder' mas
-	./bin/build_matrix matrix 512 trace_folder/*
-	./bin/greedy matrix 512 mmm
-	#cat mmm
+	./bin/build_rand_send mas 256
+	#mpirun -np 256 ./bin/prog_test '/home/causelove/mishenka/prog/kursach/greedy/trace_folder' mas
+	mpisubmit.bg -np 256 -w 00:05:00 ./bin/prog_test -- '/gpfs/data/edu-cmc-sqi16y3-004/kursach/trace_folder' mas
+	sleep 60
+	./bin/build_matrix matrix 256 trace_folder/*
+	./bin/greedy matrix 256 mmm
 
 $(GREEDY_FILE): $(GREEDY_FILE).cpp
 	$(CXX) $(CXXFLAGS) $(GREEDY_FILE).cpp -o bin/greedy
@@ -35,8 +41,9 @@ $(BUILD_RAND_SEND): $(BUILD_RAND_SEND).cpp
 	$(CXX) $(CXXFLAGS) $(BUILD_RAND_SEND).cpp -o bin/build_rand_send
 
 $(CHECK_PROG): $(CHECK_PROG).cpp
-	mpicxx $(CXXFLAGS) -std=c++11 $(CHECK_PROG).cpp -o bin/prog_test
+	mpicxx $(CXXFLAGS) $(CHECK_PROG).cpp -o bin/prog_test
 
 clean:
 	rm -rf bin/*
+	rm -rf trace_folder/*
 	rm -rf *.o

@@ -75,8 +75,14 @@ int main(int argc, char *argv[])
     delete [] rand_rank_send;
     delete [] rand_rank_recv;
 
-    MPI_Finalize();
+    double fin_time = clock() - time;
 
-    cout << "> Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
+    MPI_Reduce(&fin_time, &time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (myRank == 0)
+        cout << ">Time of computation = " << time / CLOCKS_PER_SEC << endl;
+
+    rand_send.close();
+    MPI_Finalize();
     return 0;
 }

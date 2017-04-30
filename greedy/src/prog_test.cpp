@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
 
     string tr_fold(argv[1]);
 
+    double time = clock();
     MPI_Init(&argc, &argv);
 
     int nProc = 0, myRank = 0;
@@ -28,8 +29,48 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &nProc);
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
 
-    string file_name = tr_fold +  "/proc_" + to_string(myRank);
+    string file_name = tr_fold +  "/proc_";
+    char *str_rank = NULL;
+
+    int i = 10, cnt = 1;
+    int tmp_rank = myRank;
+
+    while ((tmp_rank % i) != tmp_rank)
+    {
+        cnt++;
+        i *= 10;
+    }
+
+    str_rank = new char [cnt + 1];
+    str_rank[cnt] = '\0';
+
+    if (myRank == 0)
+        str_rank[0] = '0';
+
+    while (tmp_rank > 0)
+    {
+        int tmp = tmp_rank % 10;
+
+        str_rank[cnt - 1] = tmp + '0';
+        cnt--;
+
+        tmp_rank /= 10;
+    }
+
+    string tmp_str(str_rank);
+
+    file_name += tmp_str;
+
+    delete [] str_rank;
+
     ofstream proc_file(file_name.c_str());
+    if (proc_file.is_open() == false)
+        {
+            cerr << "> Can not open proc_file with such name." << endl;
+            MPI_Finalize();
+            return -1;
+        }
+
 
     ifstream rand_send(argv[2]);
 
@@ -85,7 +126,15 @@ int main(int argc, char *argv[])
     delete [] rand_rank_send;
     delete [] rand_rank_recv;
 
+    double fin_time = clock() - time;
+
+    MPI_Reduce(&fin_time, &time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (myRank == 0)
+        cout << ">Time of computation = " << time / CLOCKS_PER_SEC << endl;
+
     proc_file.close();
+    rand_send.close();
     MPI_Finalize();
     return 0;
 }

@@ -106,29 +106,44 @@ std::vector < std::vector < int > > find_neighbour (std::vector < int > vec, int
 int main(int argc, char const *argv[])
 {
     /*<matrix_file> <num_of_proc> <map_file>*/
-    if (argc != 4)
+    if ((argc > 4) || (argc < 3))
     {
         cerr << "> Unexpected quantity of arguments, check your comand string:\n./<prog> <matrix_file> <num_of_proc> [mapping_file]" << endl;
         return -1;
     }
 
+    ofstream map_file;
+    string map_file_name;
     if (argc == 3)
     {
-        /*если не равно 3, то тогда сделать дефолтное имя мээпинг файла*/
+        map_file.open("mymap.map");
+        if (map_file.is_open() == false)
+        {
+            cerr << "> Can not open map_file with such name." << endl;
+            return -1;
+        }
+
+        cout << "> Your map will be written in a map file with default name \"mymap.map\"." << endl;
+
+        map_file_name = "mymap.map";
+    }
+    else
+    {
+        map_file.open(argv[3]);
+        if (map_file.is_open() == false)
+        {
+            cerr << "> Can not open map_file with such name." << endl;
+            return -1;
+        }
+
+        map_file_name = argv[3];
     }
 
     ifstream matrix_file(argv[1]);
     if (matrix_file.is_open() == false)
     {
         cerr << "> Can not open matrix with such name." << endl;
-        return -1;
-    }
-
-    ofstream map_file(argv[3]);
-    if (map_file.is_open() == false)
-    {
-        cerr << "> Can not open map_file with such name." << endl;
-        matrix_file.close();
+        map_file.close();
         return -1;
     }
 
@@ -395,11 +410,6 @@ int main(int argc, char const *argv[])
                     proc_cords[k] = neihgbours[j][k];
                 proc = torus[neihgbours[j][0]][neihgbours[j][1]][neihgbours[j][2]];
 
-                /*вывод для дебага*/
-                /*cout << "!!!" << proc << " " << last_proc << endl;
-                for (int k = 0; k < 3; k++)
-                    cout << proc_cords[k] << " ";
-                cout << endl;*/
                 break;
             }
 
@@ -437,12 +447,6 @@ int main(int argc, char const *argv[])
             }
 
             torus[proc_cords[0]][proc_cords[1]][proc_cords[2]] = proc;
-
-            /*вывод для дебага*/
-            /*cout << "???" << proc << " " << last_proc << endl;
-            for (int k = 0; k < 3; k++)
-                cout << proc_cords[k] << " ";
-            cout << endl;*/
         }
     }
     cout << "\n> DONE!\n" << endl;
@@ -532,7 +536,7 @@ int main(int argc, char const *argv[])
     }
     cout << "\n> DONE!\n" << endl;
 
-    cout << "> Your map file was successfully written in the file, with file name \"" << argv[3] << "\"" << endl;
+    cout << "> Your map file was successfully written in the file, with file name \"" << map_file_name << "\"" << endl;
     cout << "> Time of computation = " << (clock() - time) / CLOCKS_PER_SEC << endl;
 
     matrix_file.close();
