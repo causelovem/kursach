@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
         while (!proc_file.eof())
         {
             proc_file >> dest;
+            if (proc_file.eof())
+                break;
             proc_file >> size;
 
             vec[proc][dest] +=size;

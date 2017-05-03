@@ -12,8 +12,8 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    /*<trace_folder> <rand_send>*/
-    if (argc != 2)
+    /*<rand_send1> <rand_send2> <rand_send3>*/
+    if (argc != 4)
     {
         cerr << ">Unexpected quantity of arguments, check your comand string." << endl;
         return -1;
@@ -29,11 +29,9 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &nProc);
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
 
-    ifstream rand_send(argv[2]);
-
     double *mas1 = NULL, *mas2 = NULL, *mas3 = NULL, *mas4 = NULL;    
     
-    int size = 1000;
+    int size = 900000;
     mas1 = new double [size];
     mas2 = new double [size];
     mas3 = new double [size];
@@ -42,30 +40,40 @@ int main(int argc, char *argv[])
     int *rand_rank_send = new int [nProc];
     int *rand_rank_recv = new int [nProc];
 
-    for (int i = 0; i < nProc; i++)
-    {
-        rand_send >> rand_rank_send[i];
-        rand_send >> rand_rank_recv[i];
-    }
-
     for (int i = 0; i < size; i++)
     {
         mas1[i] = i;
         mas2[i] = i;
     }
 
-    if (myRank < nProc / 2)
-    {   
-        MPI_Send(mas1, size, MPI_DOUBLE, nProc - 1 - myRank, 0, MPI_COMM_WORLD);
-    }
-    else
+    for (int j = 0; j < 3; j++)
     {
-        MPI_Recv(mas3, size, MPI_DOUBLE, abs(nProc - 1 - myRank), 0, MPI_COMM_WORLD, &status);
+        ifstream rand_send(argv[j + 1]);
+        for (int i = 0; i < nProc; i++)
+        {
+            rand_send >> rand_rank_send[i];
+            rand_send >> rand_rank_recv[i];
+        }
+        rand_send.close();
+
+        if (myRank < nProc / 2)
+        {   
+            MPI_Send(mas1, size, MPI_DOUBLE, nProc - 1 - myRank, 0, MPI_COMM_WORLD);
+        }
+        else
+        {
+            MPI_Recv(mas3, size, MPI_DOUBLE, abs(nProc - 1 - myRank), 0, MPI_COMM_WORLD, &status);
+        }
+
+        MPI_Isend(mas2, size, MPI_DOUBLE, rand_rank_send[myRank], 0, MPI_COMM_WORLD, &req);
+        MPI_Irecv(mas4, size, MPI_DOUBLE, rand_rank_recv[myRank], 0, MPI_COMM_WORLD, &req);
+
+        for (int i = 0; i < size; i++)
+        {
+            mas2[i] += mas3[i];
+            mas4[i] += mas1[i];
+        }
     }
-
-    MPI_Isend(mas2, size, MPI_DOUBLE, rand_rank_send[myRank], 0, MPI_COMM_WORLD, &req);
-    MPI_Irecv(mas4, size, MPI_DOUBLE, rand_rank_recv[myRank], 0, MPI_COMM_WORLD, &req);
-
 
     delete [] mas1;
     delete [] mas2;
@@ -82,7 +90,6 @@ int main(int argc, char *argv[])
     if (myRank == 0)
         cout << ">Time of computation = " << time / CLOCKS_PER_SEC << endl;
 
-    rand_send.close();
     MPI_Finalize();
     return 0;
 }

@@ -4,7 +4,7 @@ CHECK_PROG = src/prog_test
 BUILD_MATRIX = src/build_matrix
 BUILD_RAND_SEND = src/build_rand_send
 CXX = g++
-CXXFLAGS = -g -O3 -Wall
+CXXFLAGS = -g -O0 -Wall
 
 all: $(COM_MATRIX_GEN) $(GREEDY_FILE) $(BUILD_MATRIX) $(BUILD_RAND_SEND) $(CHECK_PROG)
  
@@ -19,6 +19,8 @@ check:
 	# for (( count = 0; count < 32; count++ )) do \
 	# 	echo >> proc_$count ; \
 	# done \
+
+	# for (( count = 0; count < 256; count++ )) do echo >> proc_$count ; done
 	
 	rm -rf trace_folder/proc_*
 	./bin/build_rand_send mas 256
